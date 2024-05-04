@@ -122,6 +122,8 @@ github.com/drakkan/ftpserverlib v0.0.0-20240430171908-06190249a088 h1:M7X8bstrPu
 github.com/drakkan/ftpserverlib v0.0.0-20240430171908-06190249a088/go.mod h1:+9afJRWESpCq4/O8Vr00Q2jfinRxP6PiCpXph6CgGuc=
 github.com/drakkan/webdav v0.0.0-20240414072657-7c19d3cb5103 h1:jhcR8ixhpd3f8iBeH/6pJ9V3BNjY3Yjrb7Ipp8Cezmw=
 github.com/drakkan/webdav v0.0.0-20240414072657-7c19d3cb5103/go.mod h1:zOVb1QDhwwqWn2L2qZ0U3swMSO4GTSNyIwXCGO/UGWE=
+github.com/drakkan/webdav v0.0.0-20240503091431-218ec83910bb h1:067/Uo8cfeY7QC0yzWCr/RImuNcM0rLWAsBUyMks59o=
+github.com/drakkan/webdav v0.0.0-20240503091431-218ec83910bb/go.mod h1:zOVb1QDhwwqWn2L2qZ0U3swMSO4GTSNyIwXCGO/UGWE=
 github.com/eikenb/pipeat v0.0.0-20210730190139-06b3e6902001 h1:/ZshrfQzayqRSBDodmp3rhNCHJCff+utvgBuWRbiqu4=
 github.com/eikenb/pipeat v0.0.0-20210730190139-06b3e6902001/go.mod h1:kltMsfRMTHSFdMbK66XdS8mfMW77+FZA1fGY1xYMF84=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
