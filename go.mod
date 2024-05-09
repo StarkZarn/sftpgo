@@ -40,6 +40,7 @@ require (
 	github.com/klauspost/compress v1.17.8
 	github.com/lestrrat-go/jwx/v2 v2.0.21
 	github.com/lithammer/shortuuid/v3 v3.0.7
+	github.com/lithammer/shortuuid/v4 v4.0.0
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/mhale/smtpd v0.8.2
 	github.com/minio/sio v0.3.1
