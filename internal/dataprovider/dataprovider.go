@@ -3037,27 +3037,31 @@ func validateFilterProtocols(filters *sdk.BaseUserFilters) error {
 	return nil
 }
 
-func validateTLSCerts(certs []string) error {
+func validateTLSCerts(certs []string) ([]string, error) {
+	var validateCerts []string
 	for idx, cert := range certs {
+		if cert == "" {
+			continue
+		}
 		derBlock, _ := pem.Decode([]byte(cert))
 		if derBlock == nil {
-			return util.NewI18nError(
+			return nil, util.NewI18nError(
 				util.NewValidationError(fmt.Sprintf("invalid TLS certificate %d", idx)),
 				util.I18nErrorInvalidTLSCert,
 			)
 		}
-		cert, err := x509.ParseCertificate(derBlock.Bytes)
+		crt, err := x509.ParseCertificate(derBlock.Bytes)
 		if err != nil {
-			return util.NewI18nError(
+			return nil, util.NewI18nError(
 				util.NewValidationError(fmt.Sprintf("error parsing TLS certificate %d", idx)),
 				util.I18nErrorInvalidTLSCert,
 			)
 		}
-		if cert.PublicKeyAlgorithm == x509.RSA {
-			if rsaCert, ok := cert.PublicKey.(*rsa.PublicKey); ok {
+		if crt.PublicKeyAlgorithm == x509.RSA {
+			if rsaCert, ok := crt.PublicKey.(*rsa.PublicKey); ok {
 				if size := rsaCert.N.BitLen(); size < 2048 {
 					providerLog(logger.LevelError, "rsa cert with size %d not accepted, minimum 2048", size)
-					return util.NewI18nError(
+					return nil, util.NewI18nError(
 						util.NewValidationError(fmt.Sprintf("invalid size %d for rsa cert at position %d, minimum 2048",
 							size, idx)),
 						util.I18nErrorKeySizeInvalid,
@@ -3065,8 +3069,9 @@ func validateTLSCerts(certs []string) error {
 				}
 			}
 		}
+		validateCerts = append(validateCerts, cert)
 	}
-	return nil
+	return validateCerts, nil
 }
 
 func validateBaseFilters(filters *sdk.BaseUserFilters) error {
@@ -3093,9 +3098,11 @@ func validateBaseFilters(filters *sdk.BaseUserFilters) error {
 			return util.NewValidationError(fmt.Sprintf("invalid TLS username: %q", filters.TLSUsername))
 		}
 	}
-	if err := validateTLSCerts(filters.TLSCerts); err != nil {
+	certs, err := validateTLSCerts(filters.TLSCerts)
+	if err != nil {
 		return err
 	}
+	filters.TLSCerts = certs
 	for _, opts := range filters.WebClient {
 		if !util.Contains(sdk.WebClientOptions, opts) {
 			return util.NewValidationError(fmt.Sprintf("invalid web client options %q", opts))
@@ -3248,7 +3255,7 @@ func hashPlainPassword(plainPwd string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("bcrypt hashing error: %w", err)
 		}
-		return string(pwd), nil
+		return util.BytesToString(pwd), nil
 	}
 	pwd, err := argon2id.CreateHash(plainPwd, argon2Params)
 	if err != nil {
@@ -3422,7 +3429,7 @@ func checkUserAndTLSCertificate(user *User, protocol string, tlsCert *x509.Certi
 	switch protocol {
 	case protocolFTP, protocolWebDAV:
 		for _, cert := range user.Filters.TLSCerts {
-			derBlock, _ := pem.Decode([]byte(cert))
+			derBlock, _ := pem.Decode(util.StringToBytes(cert))
 			if derBlock != nil && bytes.Equal(derBlock.Bytes, tlsCert.Raw) {
 				return *user, nil
 			}
@@ -3544,7 +3551,7 @@ func checkUserAndPubKey(user *User, pubKey []byte, isSSHCert bool) (User, string
 		return *user, "", ErrInvalidCredentials
 	}
 	for idx, key := range user.PublicKeys {
-		storedKey, comment, _, _, err := ssh.ParseAuthorizedKey([]byte(key))
+		storedKey, comment, _, _, err := ssh.ParseAuthorizedKey(util.StringToBytes(key))
 		if err != nil {
 			providerLog(logger.LevelError, "error parsing stored public key %d for user %s: %v", idx, user.Username, err)
 			return *user, "", err
@@ -4108,7 +4115,7 @@ func getPreLoginHookResponse(loginMethod, ip, protocol string, userAsJSON []byte
 
 	cmd := exec.CommandContext(ctx, config.PreLoginHook, args...)
 	cmd.Env = append(env,
-		fmt.Sprintf("SFTPGO_LOGIND_USER=%s", string(userAsJSON)),
+		fmt.Sprintf("SFTPGO_LOGIND_USER=%s", util.BytesToString(userAsJSON)),
 		fmt.Sprintf("SFTPGO_LOGIND_METHOD=%s", loginMethod),
 		fmt.Sprintf("SFTPGO_LOGIND_IP=%s", ip),
 		fmt.Sprintf("SFTPGO_LOGIND_PROTOCOL=%s", protocol),
@@ -4155,7 +4162,7 @@ func executePreLoginHook(username, loginMethod, ip, protocol string, oidcTokenFi
 	recoveryCodes := u.Filters.RecoveryCodes
 	err = json.Unmarshal(out, &u)
 	if err != nil {
-		return u, fmt.Errorf("invalid pre-login hook response %q, error: %v", string(out), err)
+		return u, fmt.Errorf("invalid pre-login hook response %q, error: %v", util.BytesToString(out), err)
 	}
 	u.ID = userID
 	u.UsedQuotaSize = userUsedQuotaSize
@@ -4250,7 +4257,7 @@ func ExecutePostLoginHook(user *User, loginMethod, ip, protocol string, err erro
 
 		cmd := exec.CommandContext(ctx, config.PostLoginHook, args...)
 		cmd.Env = append(env,
-			fmt.Sprintf("SFTPGO_LOGIND_USER=%s", string(userAsJSON)),
+			fmt.Sprintf("SFTPGO_LOGIND_USER=%s", util.BytesToString(userAsJSON)),
 			fmt.Sprintf("SFTPGO_LOGIND_IP=%s", ip),
 			fmt.Sprintf("SFTPGO_LOGIND_METHOD=%s", loginMethod),
 			fmt.Sprintf("SFTPGO_LOGIND_STATUS=%s", status),
@@ -4319,7 +4326,7 @@ func getExternalAuthResponse(username, password, pkey, keyboardInteractive, ip, 
 	cmd := exec.CommandContext(ctx, config.ExternalAuthHook, args...)
 	cmd.Env = append(env,
 		fmt.Sprintf("SFTPGO_AUTHD_USERNAME=%s", username),
-		fmt.Sprintf("SFTPGO_AUTHD_USER=%s", string(userAsJSON)),
+		fmt.Sprintf("SFTPGO_AUTHD_USER=%s", util.BytesToString(userAsJSON)),
 		fmt.Sprintf("SFTPGO_AUTHD_IP=%s", ip),
 		fmt.Sprintf("SFTPGO_AUTHD_PASSWORD=%s", password),
 		fmt.Sprintf("SFTPGO_AUTHD_PUBLIC_KEY=%s", pkey),

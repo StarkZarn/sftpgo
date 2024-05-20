@@ -25,7 +25,7 @@ The open source license grant you freedom but not assurance of help. So why woul
 
 Supporting the project benefit businesses and the community because if the project is financially sustainable, using this business model, we don't have to restrict features and/or switch to an [Open-core](https://en.wikipedia.org/wiki/Open-core_model) model. The technology stays truly open source. Everyone wins.
 
-You should support the project for its ongoing maintenance, even if you don't have any questions or need new features. If SFTPGo is no longer maintained you will have troubles and your company will lose money: bugs and security vulnerabilities will no longer be fixed, new algorithms will not be added to support newer clients, and so on. You will be forced to switch to a similar proprietary product and pay for its license and the migration cost.
+It is important to understand that you should support SFTPGo and any other Open Source project you rely on for ongoing maintenance, even if you don't have any questions or need new features, to mitigate the business risk of a project you depend on going unmaintained, with its security and development velocity implications.
 
 ### Thank you to our sponsors
 
@@ -53,7 +53,7 @@ You can use SFTPGo for free, respecting the obligations of the Open Source licen
 
 Use [discussions](https://github.com/drakkan/sftpgo/discussions) to ask questions and get support from the community.
 
-If you report an invalid issue and/or ask for step-by-step support, your issue will be closed as invalid without further explanation. Invalid bug reports left open may confuse other users. Thanks for understanding.
+If you report an invalid issue and/or ask for step-by-step support, your issue will be closed as invalid without further explanation and/or the "support request" label will be added. Invalid bug reports may confuse other users. Thanks for understanding.
 
 ## Documentation
 
@@ -61,7 +61,7 @@ You can read more about supported features and documentation at [sftpgo.github.i
 
 ## Release Cadence
 
-SFTPGo releases are feature-driven, we don't have a fixed time based schedule. As a rough estimate, you can expect 1 or 2 new releases per year.
+SFTPGo releases are feature-driven, we don't have a fixed time based schedule. As a rough estimate, you can expect 1 or 2 new major releases per year and several bug fix releases.
 
 ## Acknowledgements
 
@@ -79,7 +79,7 @@ Thank you to [Incode](https://www.incode.it/) for helping us to improve the UI/U
 
 ## License
 
-GNU AGPL-3.0-only
+SFTPGo source code is licensed under the GNU AGPL-3.0-only.
 
 The [theme](https://keenthemes.com/products/templates-mega-bundle) used in WebAdmin and WebClient user interfaces is proprietary, this means:
 
@@ -87,3 +87,7 @@ The [theme](https://keenthemes.com/products/templates-mega-bundle) used in WebAd
 - The SFTPGo WebAdmin and WebClient user interfaces (HTML, CSS and JS components) based on this theme are allowed for use only within the SFTPGo product and therefore cannot be used in derivative works/products without an explicit grant from the [SFTPGo Team](mailto:support@sftpgo.com).
 
 More information about [compliance](https://sftpgo.com/compliance.html).
+
+## Copyright
+
+Copyright (C) 2019 Nicola Murino

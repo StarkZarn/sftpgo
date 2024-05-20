@@ -63,7 +63,7 @@ func NewServer(config *Configuration, configDir string, binding Binding, id int)
 		}
 		bannerContent, err := os.ReadFile(bannerFilePath)
 		if err == nil {
-			server.initialMsg = string(bannerContent)
+			server.initialMsg = util.BytesToString(bannerContent)
 		} else {
 			logger.WarnToConsole("unable to read FTPD banner file: %v", err)
 			logger.Warn(logSender, "", "unable to read banner file: %v", err)
@@ -133,6 +133,7 @@ func (s *Server) GetSettings() (*ftpserver.Settings, error) {
 		EnableHASH:               s.config.HASHSupport > 0,
 		EnableCOMB:               s.config.CombineSupport > 0,
 		DefaultTransferType:      ftpserver.TransferTypeBinary,
+		IgnoreASCIITranferType:   s.binding.IgnoreASCIITransferType == 1,
 		ActiveConnectionsCheck:   ftpserver.DataConnectionRequirement(s.binding.ActiveConnectionsSecurity),
 		PasvConnectionsCheck:     ftpserver.DataConnectionRequirement(s.binding.PassiveConnectionsSecurity),
 	}, nil
@@ -198,7 +199,8 @@ func (s *Server) AuthUser(cc ftpserver.ClientContext, username, password string)
 		return nil, err
 	}
 	setStartDirectory(user.Filters.StartDirectory, cc)
-	connection.Log(logger.LevelInfo, "User %q logged in with %q from ip %q", user.Username, loginMethod, ipAddr)
+	connection.Log(logger.LevelInfo, "User %q logged in with %q from ip %q, TLS enabled? %t",
+		user.Username, loginMethod, ipAddr, cc.HasTLSForControl())
 	dataprovider.UpdateLastLogin(&user)
 	return connection, nil
 }
@@ -418,9 +420,9 @@ func updateLoginMetrics(user *dataprovider.User, ip, loginMethod string, err err
 	metric.AddLoginAttempt(loginMethod)
 	if err == nil {
 		plugin.Handler.NotifyLogEvent(notifier.LogEventTypeLoginOK, common.ProtocolFTP, user.Username, ip, "", nil)
+		common.DelayLogin(nil)
 	} else if err != common.ErrInternalFailure {
-		logger.ConnectionFailedLog(user.Username, ip, loginMethod,
-			common.ProtocolFTP, err.Error())
+		logger.ConnectionFailedLog(user.Username, ip, loginMethod, common.ProtocolFTP, err.Error())
 		event := common.HostEventLoginFailed
 		logEv := notifier.LogEventTypeLoginFailed
 		if errors.Is(err, util.ErrNotFound) {
@@ -429,6 +431,9 @@ func updateLoginMetrics(user *dataprovider.User, ip, loginMethod string, err err
 		}
 		common.AddDefenderEvent(ip, common.ProtocolFTP, event)
 		plugin.Handler.NotifyLogEvent(logEv, common.ProtocolFTP, user.Username, ip, "", err)
+		if loginMethod != dataprovider.LoginMethodTLSCertificate {
+			common.DelayLogin(err)
+		}
 	}
 	metric.AddLoginResult(loginMethod, err)
 	dataprovider.ExecutePostLoginHook(user, loginMethod, ip, common.ProtocolFTP, err)
