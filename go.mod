@@ -186,5 +186,5 @@ replace (
 	github.com/fclairamb/ftpserverlib => github.com/drakkan/ftpserverlib v0.0.0-20240510125431-4617586dfa1c
 	github.com/jlaffaye/ftp => github.com/drakkan/ftp v0.0.0-20240430173938-7ba8270c8e7f
 	github.com/robfig/cron/v3 => github.com/drakkan/cron/v3 v3.0.0-20230222140221-217a1e4d96c0
-	golang.org/x/crypto => github.com/drakkan/crypto v0.0.0-20240509175024-33071fb6437f
+	golang.org/x/crypto => github.com/drakkan/crypto v0.0.0-20210322153248-0c34fe9e7dc2
 )
