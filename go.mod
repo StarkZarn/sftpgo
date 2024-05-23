@@ -51,7 +51,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rs/cors v1.11.0
 	github.com/rs/xid v1.5.0
-	github.com/rs/zerolog v1.32.0
+	github.com/rs/zerolog v1.33.0
 	github.com/sftpgo/sdk v0.1.7
 	github.com/shirou/gopsutil/v3 v3.24.4
 	github.com/spf13/afero v1.11.0
